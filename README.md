@@ -2,7 +2,7 @@
 
 Statistical hit calling for HT-recruit (HTr) case/control screens.
 
-HT-recruit is a massively parallel assay that measures transcription activation domain (AD) activity by sequencing the enrichment of each domain in the ON (recruited) vs OFF (not recruited) fraction. This package identifies ADs whose activity changes significantly between two conditions — for example, a kinase inhibitor treatment vs vehicle control — by comparing log2(ON/OFF) enrichment (rho) across conditions.
+HT-recruit is a massively parallel assay that measures transcription activation domain (AD) activity by sequencing the enrichment of each domain in the ON (recruited) vs OFF (not recruited) fraction. This package identifies ADs whose activity changes significantly between two conditions — for example, a drug treatment vs vehicle control — by comparing log2(ON/OFF) enrichment (rho) across conditions.
 
 ### Why bootstrapping?
 
@@ -69,25 +69,10 @@ Condition names are inferred from filenames by stripping `_combo.csv` (or `.csv`
 
 #### Null population
 
-| Argument | Default | Description |
-|---|---|---|
-| `--null-file` | *(auto)* | CSV specifying the null population (see formats below). If omitted, null domains are classified automatically from the control condition. |
-
-**Automatic null classification** (when `--null-file` is not provided):
+Null domains are classified automatically from the control condition:
 1. Domains whose label contains `random_control` (case-insensitive) are always null.
 2. Rho is computed for all domains in the control condition. Domains with `rho_mean ≤ mean(random_controls) + 2·SD` are classified as non-activating (null).
 3. Domains above that threshold are activating and eligible to be called hits.
-
-**`--null-file` formats:**
-- **CRTF annotation**: columns `HGNC Symbol`, `Tile Number`, `Hit minCMV` — domains with `Hit minCMV == "Hit"` are activating.
-- **is_null**: index = domain labels, column `is_null` (bool).
-- **activating**: index = domain labels, column `activating` (bool).
-
-#### Replicates
-
-| Argument | Default | Description |
-|---|---|---|
-| `--drop-rep` | *(none)* | Drop replicate `1` or `2` from both conditions. Applied before analysis; both replicates are still shown on replicate scatter plots. |
 
 #### Count filtering
 
@@ -111,6 +96,12 @@ Thresholds are set from quantiles of the null posterior probability distribution
 |---|---|---|
 | `--fpr-strong` | `0.005` | Tail quantile for strong hits (0.5% FPR). |
 | `--fpr-weak` | `0.02` | Tail quantile for weak hits (2% FPR). |
+
+#### Dropping a replicate
+
+| Argument | Default | Description |
+|---|---|---|
+| `--drop-rep` | *(none)* | Drop replicate `1` or `2` from both conditions before analysis. Only use this if you have reason to suspect a replicate failed (e.g. low library complexity, compressed read distribution). Both replicates are still shown on replicate scatter plots so the issue is visible. |
 
 ---
 
@@ -158,30 +149,23 @@ All files are written to `--output`.
 ```bash
 # Basic run
 python run_package_test.py \
-    --case    results/ERKi_combo.csv \
-    --control results/Veh_combo.csv \
-    --output  output/ERKi_vs_Veh/
-
-# Drop a technically failed replicate
-python run_package_test.py \
-    --case    results/583TF_IFN_combo.csv \
-    --control results/583TF_Veh_combo.csv \
-    --output  output/583TF_IFN_vs_Veh/ \
-    --drop-rep 2
-
-# Use a CRTF annotation file for null classification
-python run_package_test.py \
-    --case      results/ERKi_combo.csv \
-    --control   results/Veh_combo.csv \
-    --output    output/ERKi_vs_Veh/ \
-    --null-file annotations/CRTF_hits.csv
+    --case    results/Treatment_combo.csv \
+    --control results/Control_combo.csv \
+    --output  output/Treatment_vs_Control/
 
 # Stricter hit calling with more bootstrap iterations
 python run_package_test.py \
-    --case       results/ERKi_combo.csv \
-    --control    results/Veh_combo.csv \
-    --output     output/ERKi_vs_Veh_strict/ \
+    --case       results/Treatment_combo.csv \
+    --control    results/Control_combo.csv \
+    --output     output/Treatment_vs_Control_strict/ \
     --n-boot     2000 \
     --fpr-strong 0.001 \
     --fpr-weak   0.01
+
+# Drop a failed replicate
+python run_package_test.py \
+    --case     results/Treatment_combo.csv \
+    --control  results/Control_combo.csv \
+    --output   output/Treatment_vs_Control/ \
+    --drop-rep 2
 ```
