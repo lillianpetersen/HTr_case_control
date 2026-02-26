@@ -6,9 +6,7 @@ HT-recruit is a massively parallel assay that measures transcription activation 
 
 ### Why bootstrapping?
 
-Naive comparison of per-replicate rho values is sensitive to sampling noise, particularly for low-count domains. This package uses a multinomial bootstrap: for each domain and each replicate, the observed ON/OFF count vector is resampled `n_boot` times to generate a distribution of plausible rho values. Subtracting the control bootstrap distribution from the case bootstrap distribution yields a per-domain delta distribution that naturally propagates count uncertainty into the downstream statistics.
-
-Hit significance is quantified as a **posterior probability of dominance**: the fraction of the null delta distribution that falls below each domain's bootstrap delta values, averaged across bootstrap draws. This is calibrated against a null population of non-activating domains, so thresholds are set empirically from the data rather than from parametric assumptions. Strong and weak hits are called at user-specified false positive rates relative to the null posterior distribution.
+Sequencing counts are noisy, and a simple comparison of average rho values between conditions does not capture the uncertainty inherent in low-count domains. By resampling the count data thousands of times, bootstrapping builds a distribution of plausible outcomes for each domain, allowing hit calls to be grounded in the full uncertainty of the measurement rather than point estimates. Thresholds are set empirically from a null population of non-activating domains rather than from parametric assumptions, making the approach robust to the non-normal distributions typical of HTr data.
 
 ---
 
