@@ -2,7 +2,13 @@
 
 Statistical hit calling for HT-recruit (HTr) case/control screens.
 
-Compares transcription activation domain activity between two conditions using a multinomial bootstrap approach. For each domain, read counts in the ON and OFF fractions are resampled to build a distribution of plausible log2(ON/OFF) enrichment values (rho). The difference in rho distributions between case and control conditions yields a posterior probability of dominance for each domain, calibrated against a null population of non-activating domains. Hits are called at user-specified false positive rates relative to the null.
+HT-recruit is a massively parallel assay that measures transcription activation domain (AD) activity by sequencing the enrichment of each domain in the ON (recruited) vs OFF (not recruited) fraction. This package identifies ADs whose activity changes significantly between two conditions — for example, a kinase inhibitor treatment vs vehicle control — by comparing log2(ON/OFF) enrichment (rho) across conditions.
+
+### Why bootstrapping?
+
+Naive comparison of per-replicate rho values is sensitive to sampling noise, particularly for low-count domains. This package uses a multinomial bootstrap: for each domain and each replicate, the observed ON/OFF count vector is resampled `n_boot` times to generate a distribution of plausible rho values. Subtracting the control bootstrap distribution from the case bootstrap distribution yields a per-domain delta distribution that naturally propagates count uncertainty into the downstream statistics.
+
+Hit significance is quantified as a **posterior probability of dominance**: the fraction of the null delta distribution that falls below each domain's bootstrap delta values, averaged across bootstrap draws. This is calibrated against a null population of non-activating domains, so thresholds are set empirically from the data rather than from parametric assumptions. Strong and weak hits are called at user-specified false positive rates relative to the null posterior distribution.
 
 ---
 
